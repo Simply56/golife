@@ -83,8 +83,6 @@ func (g *Game) CountNeighbors(x, y int) (blue_count, orange_count int) {
 
 // Update advances the game to the next generation
 func (g *Game) Update() {
-	// Copy the grid into nextGrid
-	// copy(g.nextGrid, g.grid)
 
 	numCPU := runtime.NumCPU()
 	var wg sync.WaitGroup
@@ -151,19 +149,17 @@ func (g *Game) Update() {
 // Draw renders the current state of the game to an SDL texture
 func (g *Game) Draw(renderer *sdl.Renderer) {
 	// Prepare point groups per color
-	var orangePoints []sdl.Point
 	var bluePoints []sdl.Point
+	var orangePoints []sdl.Point
 	var blackPoints []sdl.Point
 	var darkPoints []sdl.Point
 	var greyPoints []sdl.Point
-	var lightPoints []sdl.Point
 
-	orangePoints = make([]sdl.Point, 0, gridWidth*gridHeight/8)
 	bluePoints = make([]sdl.Point, 0, gridWidth*gridHeight/8)
+	orangePoints = make([]sdl.Point, 0, gridWidth*gridHeight/8)
 	blackPoints = make([]sdl.Point, 0, gridWidth*gridHeight/8)
 	darkPoints = make([]sdl.Point, 0, gridWidth*gridHeight/8)
 	greyPoints = make([]sdl.Point, 0, gridWidth*gridHeight/8)
-	lightPoints = make([]sdl.Point, 0, gridWidth*gridHeight/8)
 
 	// Collect points by color
 	for x := range gridWidth {
@@ -206,11 +202,6 @@ func (g *Game) Draw(renderer *sdl.Renderer) {
 	if len(greyPoints) > 0 {
 		renderer.SetDrawColor(0x99, 0x99, 0x99, 0xFF)
 		renderer.DrawPoints(greyPoints)
-	}
-
-	if len(lightPoints) > 0 {
-		renderer.SetDrawColor(0xFF, 0xFF, 0xFF, 0xFF)
-		renderer.DrawPoints(lightPoints)
 	}
 }
 
