@@ -205,10 +205,6 @@ func (g *Game) Draw(renderer *sdl.Renderer) {
 	}
 }
 
-func rgba(r, g, b uint8) uint32 {
-	return uint32(b) | uint32(g)<<8 | uint32(r)<<16
-}
-
 func (g *Game) outputSparsePixels() error {
 	rowData := make([]byte, 4*gridWidth)
 	for y := range gridHeight {
@@ -224,11 +220,6 @@ func (g *Game) outputSparsePixels() error {
 
 			var cell [4]byte
 			binary.LittleEndian.PutUint32(cell[:], packed)
-
-			// _, err := os.Stdout.Write(cell[:])
-			// if err != nil {
-			// 	return err
-			// }
 
 			rowData = append(rowData, cell[:]...)
 		}
@@ -246,7 +237,10 @@ func (g *Game) outputSparsePixels() error {
 	return err
 }
 
-func (g *Game) outputGrid() error {
+func rgba(r, g, b uint8) uint32 {
+	return uint32(b) | uint32(g)<<8 | uint32(r)<<16
+}
+func (g *Game) ouputDensePixels() error {
 	// Create a buffer for a single row
 	row := make([]byte, gridWidth*4)
 
@@ -279,13 +273,12 @@ func (g *Game) outputGrid() error {
 	return nil
 }
 
-func (g *Game) ouputDense() error {
+func (g *Game) ouputDenseCells() error {
 	for y := range gridHeight {
 		_, err := os.Stdout.Write(g.grid[y])
 		if err != nil {
 			return err
 		}
-		// println(g.grid[y][0])
 	}
 	return nil
 }
@@ -350,9 +343,9 @@ func (game *Game) visualize() {
 func (g *Game) present() {
 	switch PROTOCOL {
 	case DensePixels:
-		g.outputGrid()
+		g.ouputDensePixels()
 	case DenseCells:
-		g.ouputDense()
+		g.ouputDenseCells()
 	case SparsePixels:
 		g.outputSparsePixels()
 	}
