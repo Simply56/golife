@@ -106,7 +106,7 @@ func (g *Game) Update() {
 
 					// Handle dead
 					if g.grid[x][y] >= DEAD {
-						if g.grid[x][y] == 6 {
+						if g.grid[x][y] >= DEAD+3 {
 							g.nextGrid[x][y] = EMPTY
 							continue
 						}
@@ -170,13 +170,13 @@ func (g *Game) Draw(renderer *sdl.Renderer) {
 			case BLUE:
 				bluePoints = append(bluePoints, sdl.Point{X: int32(x), Y: int32(y)})
 			case DEAD:
-				bluePoints = append(bluePoints, sdl.Point{X: int32(x), Y: int32(y)})
+				blackPoints = append(blackPoints, sdl.Point{X: int32(x), Y: int32(y)})
 			case DEAD + 1:
-				bluePoints = append(bluePoints, sdl.Point{X: int32(x), Y: int32(y)})
+				darkPoints = append(darkPoints, sdl.Point{X: int32(x), Y: int32(y)})
 			case DEAD + 2:
-				bluePoints = append(bluePoints, sdl.Point{X: int32(x), Y: int32(y)})
+				greyPoints = append(greyPoints, sdl.Point{X: int32(x), Y: int32(y)})
 			case DEAD + 3:
-				bluePoints = append(bluePoints, sdl.Point{X: int32(x), Y: int32(y)})
+				blackPoints = append(blackPoints, sdl.Point{X: int32(x), Y: int32(y)})
 			}
 		}
 	}
