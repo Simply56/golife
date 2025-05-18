@@ -2,12 +2,10 @@ package main
 
 import (
 	"encoding/binary"
-	"fmt"
 	"math/rand"
 	"os"
 	"runtime"
 	"sync"
-	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -45,7 +43,7 @@ func NewGame() *Game {
 		grid[i] = make([]uint8, gridHeight)
 		nextGrid[i] = make([]uint8, gridHeight)
 		for j := range grid[i] {
-			grid[i][j] = uint8(rand.Int()) % 7
+			grid[i][j] = uint8(rand.Int()) % 4
 		}
 	}
 	return &Game{
@@ -117,13 +115,13 @@ func (g *Game) Update() {
 	rowsPerWorker := gridHeight / numCPU
 	for i := range numCPU {
 
-		wg.Add(1)
 		startRow := i * rowsPerWorker
 		endRow := startRow + rowsPerWorker
 		if i == numCPU-1 {
 			endRow = gridWidth // Handle remainder
 		}
 
+		wg.Add(1)
 		go func(startRow, endRow int) {
 			defer wg.Done()
 			for x := startRow; x < endRow; x++ {
@@ -187,7 +185,6 @@ func (g *Game) Draw(renderer *sdl.Renderer) {
 		renderer.SetDrawColor(0x7f, 0x7f, 0x7f, 0xFF)
 		renderer.DrawPoints(darkPoints)
 	}
-
 	if len(greyPoints) > 0 {
 		renderer.SetDrawColor(0x99, 0x99, 0x99, 0xFF)
 		renderer.DrawPoints(greyPoints)
@@ -273,15 +270,14 @@ func (g *Game) ouputDenseCells() error {
 }
 
 func (game *Game) visualize(renderer *sdl.Renderer) {
-
 	// Poll for events to keep the window responsive
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch e := event.(type) {
 		case *sdl.QuitEvent:
-			return // exit the program cleanly
+			os.Exit(0) // exit the program cleanly
 		case *sdl.KeyboardEvent:
 			if e.Keysym.Sym == sdl.K_ESCAPE && e.State == sdl.PRESSED {
-				return
+				os.Exit(0)
 			}
 		}
 	}
@@ -298,7 +294,7 @@ func (game *Game) visualize(renderer *sdl.Renderer) {
 
 	printFPS()
 }
-func (g *Game) present(renderer *sdl.Renderer) {
+func (g *Game) OutputAll(renderer *sdl.Renderer) {
 	if VISUAL_OUT {
 		g.visualize(renderer)
 	}
@@ -344,46 +340,19 @@ func main() {
 
 	for {
 		// var wg sync.WaitGroup
-		// wg.Add(1)
-		// go func() {
-		// defer wg.Done()
+		// wg.Add(2)
 
-		game.present(renderer)
+		// go func() {
+		// 	defer wg.Done()
+		game.OutputAll(renderer)
 		// }()
 
-		// wg.Add(1)
 		// go func() {
 		// defer wg.Done()
 		game.Update()
 		// }()
+
 		// wg.Wait()
 		game.Swap()
-	}
-}
-
-// Helper function
-// Package level variables for FPS counter
-var (
-	fpsCounter     int
-	fpsLastPrint   time.Time
-	fpsInitialized bool
-)
-
-func printFPS() {
-	// Initialize on first call
-	if !fpsInitialized {
-		fpsLastPrint = time.Now()
-		fpsInitialized = true
-	}
-
-	// Increment the counter
-	fpsCounter++
-
-	// Check if a second has passed
-	now := time.Now()
-	if now.Sub(fpsLastPrint).Seconds() >= 1.0 {
-		fmt.Fprintf(os.Stderr, "FPS: %d\n", fpsCounter)
-		fpsCounter = 0
-		fpsLastPrint = now
 	}
 }
