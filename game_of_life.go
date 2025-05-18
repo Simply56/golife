@@ -20,8 +20,8 @@ const (
 )
 
 const (
-	PROTOCOL   = DenseCells
-	VISUAL_OUT = false
+	PROTOCOL   = Off
+	VISUAL_OUT = true
 	EMPTY      = 0
 	BLUE       = 1
 	ORANGE     = 2
@@ -324,7 +324,7 @@ func main() {
 			"Conway's Game of Life",
 			sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
 			gridWidth, gridHeight,
-			sdl.WINDOW_SHOWN,
+			sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE,
 		)
 		if err != nil {
 			panic(err)
@@ -339,20 +339,20 @@ func main() {
 	}
 
 	for {
-		var wg sync.WaitGroup
-		wg.Add(2)
+		// var wg sync.WaitGroup
+		// wg.Add(2)
 
-		go func() {
-			defer wg.Done()
-			game.OutputAll(renderer)
-		}()
+		// go func() {
+		// defer wg.Done()
+		game.OutputAll(renderer)
+		// }()
 
-		go func() {
-			defer wg.Done()
-			game.Update()
-		}()
+		// go func() {
+		// defer wg.Done()
+		game.Update()
+		// }()
 
-		wg.Wait()
+		// wg.Wait()
 		game.Swap()
 	}
 }
