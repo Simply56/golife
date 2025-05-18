@@ -22,14 +22,14 @@ const (
 )
 
 const (
-	PROTOCOL   = Off
+	PROTOCOL   = DenseCells
 	VISUAL_OUT = true
 	EMPTY      = 0
 	BLUE       = 1
 	ORANGE     = 2
 	DEAD       = 3
-	gridWidth  = 500
-	gridHeight = 500
+	gridWidth  = 400
+	gridHeight = 400
 )
 
 type Game struct {
@@ -283,64 +283,37 @@ func (g *Game) ouputDenseCells() error {
 	return nil
 }
 
-func (game *Game) visualize() {
-	var renderer *sdl.Renderer
+func (game *Game) visualize(renderer *sdl.Renderer) {
 
-	// Initialize SDL
-	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-		panic(err)
-	}
-	defer sdl.Quit()
-
-	// Create window
-	window, err := sdl.CreateWindow(
-		"Conway's Game of Life",
-		sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
-		gridWidth, gridHeight,
-		sdl.WINDOW_SHOWN,
-	)
-	if err != nil {
-		panic(err)
-	}
-	defer window.Destroy()
-
-	// Create renderer
-	renderer, err = sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
-	if err != nil {
-		panic(err)
-	}
-	defer renderer.Destroy()
-
-	for {
-		// Poll for events to keep the window responsive
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch e := event.(type) {
-			case *sdl.QuitEvent:
-				return // exit the program cleanly
-			case *sdl.KeyboardEvent:
-				if e.Keysym.Sym == sdl.K_ESCAPE && e.State == sdl.PRESSED {
-					return
-				}
+	// Poll for events to keep the window responsive
+	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+		switch e := event.(type) {
+		case *sdl.QuitEvent:
+			return // exit the program cleanly
+		case *sdl.KeyboardEvent:
+			if e.Keysym.Sym == sdl.K_ESCAPE && e.State == sdl.PRESSED {
+				return
 			}
 		}
-
-		printFPS()
-
-		// Clear the screen with white
-		renderer.SetDrawColor(255, 255, 255, 255)
-		renderer.Clear()
-
-		game.Update()
-		// Draw the game
-		game.Draw(renderer)
-
-		// Update the screen
-		renderer.Present()
-
-		game.Swap()
 	}
+
+	// Clear the screen with white
+	renderer.SetDrawColor(255, 255, 255, 255)
+	renderer.Clear()
+
+	// Draw the game
+	game.Draw(renderer)
+
+	// Update the screen
+	renderer.Present()
+
+	game.Swap()
+	printFPS()
 }
-func (g *Game) present() {
+func (g *Game) present(renderer *sdl.Renderer) {
+	if VISUAL_OUT {
+		g.visualize(renderer)
+	}
 	switch PROTOCOL {
 	case DensePixels:
 		g.ouputDensePixels()
@@ -353,26 +326,48 @@ func (g *Game) present() {
 
 func main() {
 	game := NewGame()
+	var renderer *sdl.Renderer = nil
 	if VISUAL_OUT {
-		game.visualize()
+
+		// Initialize SDL
+		if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+			panic(err)
+		}
+		defer sdl.Quit()
+
+		// Create window
+		window, err := sdl.CreateWindow(
+			"Conway's Game of Life",
+			sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
+			gridWidth, gridHeight,
+			sdl.WINDOW_SHOWN,
+		)
+		if err != nil {
+			panic(err)
+		}
+		defer window.Destroy()
+		// Create renderer
+		renderer, err = sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+		if err != nil {
+			panic(err)
+		}
+		defer renderer.Destroy()
 	}
 
 	for {
-		var wg sync.WaitGroup
-		wg.Add(1)
-		// Print the binary output
-		go func() {
-			defer wg.Done()
-			game.present()
-		}()
+		// var wg sync.WaitGroup
+		// wg.Add(1)
+		// go func() {
+		// defer wg.Done()
+		game.present(renderer)
+		// }()
 
-		// Update game state
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			game.Update()
-		}()
-		wg.Wait()
+		// wg.Add(1)
+		// go func() {
+		// defer wg.Done()
+		game.Update()
+		// }()
+		// wg.Wait()
 		game.Swap()
 	}
 }
