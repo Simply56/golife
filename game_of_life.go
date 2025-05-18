@@ -20,8 +20,8 @@ const (
 )
 
 const (
-	PROTOCOL   = Off
-	VISUAL_OUT = true
+	PROTOCOL   = DenseCells
+	VISUAL_OUT = false
 	EMPTY      = 0
 	BLUE       = 1
 	ORANGE     = 2
@@ -286,11 +286,11 @@ func (game *Game) visualize(renderer *sdl.Renderer) {
 	renderer.SetDrawColor(255, 255, 255, 255)
 	renderer.Clear()
 
-	// Draw the game
 	game.Draw(renderer)
 
 	// Update the screen
 	renderer.Present()
+	renderer.Flush()
 
 	printFPS()
 }
@@ -339,20 +339,20 @@ func main() {
 	}
 
 	for {
-		// var wg sync.WaitGroup
-		// wg.Add(2)
+		var wg sync.WaitGroup
+		wg.Add(2)
 
-		// go func() {
-		// 	defer wg.Done()
-		game.OutputAll(renderer)
-		// }()
+		go func() {
+			defer wg.Done()
+			game.OutputAll(renderer)
+		}()
 
-		// go func() {
-		// defer wg.Done()
-		game.Update()
-		// }()
+		go func() {
+			defer wg.Done()
+			game.Update()
+		}()
 
-		// wg.Wait()
+		wg.Wait()
 		game.Swap()
 	}
 }
