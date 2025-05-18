@@ -28,8 +28,8 @@ const (
 	BLUE       = 1
 	ORANGE     = 2
 	DEAD       = 3
-	gridWidth  = 400
-	gridHeight = 400
+	gridWidth  = 1000
+	gridHeight = 1000
 )
 
 type Game struct {
@@ -45,7 +45,7 @@ func NewGame() *Game {
 		grid[i] = make([]uint8, gridHeight)
 		nextGrid[i] = make([]uint8, gridHeight)
 		for j := range grid[i] {
-			grid[i][j] = uint8(rand.Int()) % 3
+			grid[i][j] = uint8(rand.Int()) % 7
 		}
 	}
 	return &Game{
@@ -106,12 +106,12 @@ func (g *Game) Update() {
 					cell := g.grid[x][y]
 
 					// Handle dead
-					if g.grid[x][y] >= DEAD {
-						if g.grid[x][y] >= DEAD+3 {
+					if cell >= DEAD {
+						if cell >= DEAD+3 {
 							g.nextGrid[x][y] = EMPTY
 							continue
 						}
-						g.nextGrid[x][y] = g.grid[x][y] + 1
+						g.nextGrid[x][y] = cell + 1
 						continue
 					}
 
@@ -119,7 +119,7 @@ func (g *Game) Update() {
 					count := blue_count + orange_count
 
 					// Handle living
-					if g.grid[x][y] == BLUE || g.grid[x][y] == ORANGE {
+					if cell == BLUE || cell == ORANGE {
 						if !(3 > count) && !(count > 5) {
 							g.nextGrid[x][y] = DEAD
 							continue
