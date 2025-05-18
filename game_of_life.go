@@ -22,7 +22,7 @@ const (
 )
 
 const (
-	PROTOCOL   = DenseCells
+	PROTOCOL   = Off
 	VISUAL_OUT = true
 	EMPTY      = 0
 	BLUE       = 1
@@ -88,8 +88,9 @@ func (g *Game) Update() {
 	var wg sync.WaitGroup
 
 	// Divide work based on CPU cores
-	rowsPerWorker := gridWidth / numCPU
+	rowsPerWorker := gridHeight / numCPU
 	for i := range numCPU {
+
 		wg.Add(1)
 		startRow := i * rowsPerWorker
 		endRow := startRow + rowsPerWorker
@@ -307,13 +308,13 @@ func (game *Game) visualize(renderer *sdl.Renderer) {
 	// Update the screen
 	renderer.Present()
 
-	game.Swap()
 	printFPS()
 }
 func (g *Game) present(renderer *sdl.Renderer) {
 	if VISUAL_OUT {
 		g.visualize(renderer)
 	}
+
 	switch PROTOCOL {
 	case DensePixels:
 		g.ouputDensePixels()
@@ -328,7 +329,6 @@ func main() {
 	game := NewGame()
 	var renderer *sdl.Renderer = nil
 	if VISUAL_OUT {
-
 		// Initialize SDL
 		if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 			panic(err)
@@ -359,6 +359,7 @@ func main() {
 		// wg.Add(1)
 		// go func() {
 		// defer wg.Done()
+
 		game.present(renderer)
 		// }()
 
