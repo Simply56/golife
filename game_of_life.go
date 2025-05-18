@@ -81,6 +81,32 @@ func (g *Game) CountNeighbors(x, y int) (blue_count, orange_count int) {
 	return
 }
 
+func (g *Game) CellChange(x, y int) uint8 {
+	cell := g.grid[x][y]
+	if cell >= DEAD {
+		if cell == 6 {
+			return EMPTY
+		}
+		return cell + 1
+	}
+
+	blue_count, orange_count := g.CountNeighbors(x, y)
+	count := blue_count + orange_count
+
+	if (cell == BLUE) || (cell == ORANGE) {
+		if (3 <= count) && (count <= 5) {
+			return cell
+		}
+		return DEAD
+	} else if (cell == EMPTY) && (count == 3) {
+		if blue_count > orange_count {
+			return BLUE
+		}
+		return ORANGE
+	}
+	return cell
+}
+
 // Update advances the game to the next generation
 func (g *Game) Update() {
 
@@ -102,43 +128,7 @@ func (g *Game) Update() {
 			defer wg.Done()
 			for x := startRow; x < endRow; x++ {
 				for y := range gridHeight {
-
-					cell := g.grid[x][y]
-
-					// Handle dead
-					if cell >= DEAD {
-						if cell >= DEAD+3 {
-							g.nextGrid[x][y] = EMPTY
-							continue
-						}
-						g.nextGrid[x][y] = cell + 1
-						continue
-					}
-
-					blue_count, orange_count := g.CountNeighbors(x, y)
-					count := blue_count + orange_count
-
-					// Handle living
-					if cell == BLUE || cell == ORANGE {
-						if !(3 > count) && !(count > 5) {
-							g.nextGrid[x][y] = DEAD
-							continue
-						}
-						g.nextGrid[x][y] = cell
-						continue
-					}
-
-					// Handle empty
-					if (cell == EMPTY) && (count == 3) {
-						if blue_count > orange_count {
-							g.nextGrid[x][y] = BLUE
-							continue
-						}
-						g.nextGrid[x][y] = ORANGE
-						continue
-					}
-					// Empty stays empty
-					g.nextGrid[x][y] = cell
+					g.nextGrid[x][y] = g.CellChange(x, y)
 				}
 			}
 		}(startRow, endRow)
@@ -176,8 +166,6 @@ func (g *Game) Draw(renderer *sdl.Renderer) {
 				darkPoints = append(darkPoints, sdl.Point{X: int32(x), Y: int32(y)})
 			case DEAD + 2:
 				greyPoints = append(greyPoints, sdl.Point{X: int32(x), Y: int32(y)})
-			case DEAD + 3:
-				blackPoints = append(blackPoints, sdl.Point{X: int32(x), Y: int32(y)})
 			}
 		}
 	}
